@@ -95,5 +95,5 @@ if __name__ == '__main__':
              optimizer=optimizer,
              scheduler=None,
              device=device,
-             epochs=50,
+             epochs=100,
              path='/')
