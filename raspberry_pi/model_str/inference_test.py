@@ -5,12 +5,12 @@ from PIL import Image
 from tqdm import tqdm
 import torch.nn as nn
 import torchvision
-from torchvision import datasets, transforms, models
+from torchvision import datasets, transforms
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from dataset_loading import loading_data
-from model import LeNet, AlexNet
+from model import LeNet
 
 def test(test_loader, test_num, model, criterion=None, device=None):
     batch_time = AverageMeter('Time', ':6.3f')
@@ -151,9 +151,9 @@ if __name__ == '__main__':
     # validate_loader = torch.utils.data.DataLoader(validate_dataset, batch_size=1024, shuffle=False, num_workers=16,  pin_memory=True)
     #
     # test_num = len(validate_dataset)
-    train_num, val_num, test_num, train_loader, validate_loader, test_loader, file_class_indices \
-        = loading_data(data_type='MNIST', datasetsplit=False, train_split_ratio=0.8,
-                       num_workers=8, batch_size=1024, path=r'//model/dataset')
+    # train_num, val_num, test_num, train_loader, validate_loader, test_loader, file_class_indices \
+    #     = loading_data(data_type='MNIST', datasetsplit=False, train_split_ratio=0.8, data_plot=True,
+    #                    num_workers=32, batch_size=128)
     """=================================================================================================================
         step1:instantiated model.
         step2:calculate weight of quantization to dequantization, and loading weight parameters.
@@ -161,24 +161,34 @@ if __name__ == '__main__':
               and output scale and zero point of activation by model forward.
         step4:calculate quantize of bias and activate value when inference.
     ================================================================================================================="""
-    model = torch.load(r'//model/lenet.pth')
-    model.to(device)
+    # model = LeNet()
+    # pretrain_dict = torch.load('./lenet-best.pth.tar')
+    # model.load_state_dict(pretrain_dict['state_dict'])
 
-    loss_function = nn.CrossEntropyLoss()
-    top1_acc, top5_acc, test_loss = test(test_loader, test_num, model, loss_function, device)
-    print(' * test Acc@1 {:.3f} Acc@5 {:.3f} '.format(top1_acc, top5_acc))
+    model = torch.load('./lenet.pth')
+    model.to(device)
+    print(model)
+
+    # loss_function = nn.CrossEntropyLoss()
+    # top1_acc, top5_acc, test_loss = test(test_loader, test_num, model, loss_function, device)
+    # print(' * test Acc@1 {:.3f} Acc@5 {:.3f} '.format(top1_acc, top5_acc))
     """=============================================================================================================="""
     data_transform = transforms.Compose([
                                 transforms.Grayscale(1),#mnist data
-                                # transforms.Resize((28,28)), #cifar10 32*32/ mnist 28*28
-                                transforms.ToTensor()])
-    img = Image.open(r'./1.jpg')
+                                transforms.Resize((28,28)), #cifar10 32*32/ mnist 28*28
+                                transforms.ToTensor(),
+                                transforms.Normalize((0.1307),(0.3081))
+    ])
+    img = Image.open(r'./image/2.jpg')
     img = data_transform(img)
     data = torch.unsqueeze(img, dim=0)
-    plt.imshow(img[0])
-    plt.show()
-    output = torch.squeeze(model(data.to(device))).cpu()
-    pre = torch.argmax(torch.softmax(output, dim=0))
+    # plt.imshow(img[0])
+    # plt.show()
+    model.eval()
+    with torch.no_grad():
+        output = torch.squeeze(model(data.to(device))).cpu()
+        pre = torch.argmax(torch.softmax(output, dim=0)).numpy()
+
     print(pre)
 
     # """****************************************************************************************************************

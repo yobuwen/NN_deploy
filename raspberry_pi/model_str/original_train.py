@@ -53,14 +53,14 @@ def or_train(network, model_name, train_data, test_data, val_num,
         if top1_acc > best_acc:
             best_acc = top1_acc
             best_epoch = epoch + 1
-            # torch.save({'epoch': epoch + 1,
-            #             'state_dict': network.module.state_dict(),
-            #             'best_loss': mean_loss,
-            #             'optimizer': optimizer.state_dict(),
-            #             'top1_acc': top1_acc,
-            #             'train_time': crt_time,
-            #             'mean_loss': mean_loss},
-            #            path + str(model_name) + "-best" + '.pth.tar')
+            torch.save({'epoch': epoch + 1,
+                        'state_dict': network.state_dict(),
+                        'best_loss': mean_loss,
+                        'optimizer': optimizer.state_dict(),
+                        'top1_acc': top1_acc,
+                        'train_time': crt_time,
+                        'mean_loss': mean_loss},
+                       path + str(model_name) + "-best" + '.pth.tar')
             torch.save(network, path + str(model_name) + '.pth')
             print("save model epoch: {}".format(epoch + 1))
 
@@ -74,15 +74,14 @@ if __name__ == '__main__':
     print("using {} device".format(device))
 
     train_num, val_num, test_num, train_loader, validate_loader, test_loader, file_class_indices \
-        = loading_data(data_type='MNIST', num_workers=32, batch_size=128, datasetsplit=False,
-                       path=r'//model/dataset')
-    net = LeNet()
+        = loading_data(data_type='MNIST', num_workers=16, batch_size=1024, datasetsplit=False)
 
+    net = LeNet()
     # net = nn.DataParallel(net.cuda(), device_ids=[0, 1])
     net.to(device)
 
     loss_function = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
     # optimizer = torch.optim.Adam(net.parameters())
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 150], gamma=0.1)
 
@@ -95,5 +94,5 @@ if __name__ == '__main__':
              optimizer=optimizer,
              scheduler=None,
              device=device,
-             epochs=100,
-             path='/')
+             epochs=120,
+             path='./')
