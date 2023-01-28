@@ -51,3 +51,4 @@ k = cv.waitKey(0)
 if k == 27: # press ESC to quit.
     cv.destroyAllWindows()
 
+success = model.export(format='onnx')
