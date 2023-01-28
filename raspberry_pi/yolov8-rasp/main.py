@@ -49,6 +49,8 @@ for ax in boxes:
 cv.imshow('capture',frame)
 k = cv.waitKey(0)
 if k == 27: # press ESC to quit.
+    cv.imwrite('bus-det.jpg', frame)
     cv.destroyAllWindows()
 
 success = model.export(format='onnx')
+
